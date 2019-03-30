@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/shaggun/spotify-moody-player/precache-manifest.9ff4aaae366a2aa9c0eea4fe5aefe389.js"
+  "/spotify-moody-player/precache-manifest.9cfed322584e6202b95195357edb3179.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("/shaggun/spotify-moody-player/index.html", {
+workbox.routing.registerNavigationRoute("/spotify-moody-player/index.html", {
   
   blacklist: [/^\/_/,/\/[^\/]+\.[^\/]+$/],
 });
