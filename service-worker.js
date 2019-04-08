@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/spotify-moody-player/precache-manifest.84993c7a41213b0c2559a9c12a0eacb0.js"
+  "/spotify-moody-player/precache-manifest.5aea7d442db89c272d347ff132a8d4ee.js"
 );
 
 workbox.clientsClaim();

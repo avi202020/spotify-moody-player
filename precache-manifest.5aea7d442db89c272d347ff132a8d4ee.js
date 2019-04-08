@@ -8,19 +8,19 @@ self.__precacheManifest = [
     "url": "/spotify-moody-player/static/js/runtime~main.84d7c941.js"
   },
   {
-    "revision": "5d97220121558a2142a8",
-    "url": "/spotify-moody-player/static/js/main.5d972201.chunk.js"
+    "revision": "626c25544937f5422810",
+    "url": "/spotify-moody-player/static/js/main.626c2554.chunk.js"
   },
   {
-    "revision": "65abbd0d5b2dc1aa2115",
-    "url": "/spotify-moody-player/static/js/2.65abbd0d.chunk.js"
+    "revision": "8ce30e9bf3503f193f33",
+    "url": "/spotify-moody-player/static/js/2.8ce30e9b.chunk.js"
   },
   {
-    "revision": "5d97220121558a2142a8",
+    "revision": "626c25544937f5422810",
     "url": "/spotify-moody-player/static/css/main.84377f03.chunk.css"
   },
   {
-    "revision": "8482a446669064959812eb4a6337c6c3",
+    "revision": "e37c1287506433d4a5e1acf29eab61cb",
     "url": "/spotify-moody-player/index.html"
   }
 ];
