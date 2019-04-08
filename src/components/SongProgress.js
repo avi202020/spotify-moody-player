@@ -46,50 +46,48 @@ const styles = theme => ({
   focused: {}
 });
 
-class SongProgress extends React.Component {
-  secondFormatter = number => {
-    const roundedSeconds = Math.ceil(number);
-    if (roundedSeconds < 10) {
-      return `0:0${roundedSeconds}`;
-    } else {
-      return `0:${roundedSeconds}`;
-    }
-  };
-
-  render() {
-    const { classes } = this.props;
-    return (
-      <div className={classes.root}>
-        <Slider
-          min={0}
-          max={30} //previews are no longer than 30 seconds
-          step={1}
-          className={classes.root}
-          classes={{
-            container: classes.slider,
-            track: classes.trackThickness,
-            thumb: classes.thumbIcon,
-            activated: classes.activated,
-            jumped: classes.jumped,
-            focused: classes.focused
-          }}
-          value={Math.ceil(this.props.songsInfo.timeElapsed)}
-        />
-
-        <div className={classes.elapsedTimeMargin}>
-          <Typography variant="caption" noWrap>
-            {this.secondFormatter(this.props.songsInfo.timeElapsed)}
-          </Typography>
-        </div>
-        <div className={classes.totalTimeMargin}>
-          <Typography variant="caption" noWrap>
-            0:30
-          </Typography>
-        </div>
-      </div>
-    );
+const secondFormatter = number => {
+  const roundedSeconds = Math.ceil(number);
+  if (roundedSeconds < 10) {
+    return `0:0${roundedSeconds}`;
+  } else {
+    return `0:${roundedSeconds}`;
   }
-}
+};
+
+const SongProgress = props => {
+  const { classes } = props;
+  return (
+    <div className={classes.root}>
+      <Slider
+        min={0}
+        max={30} //previews are no longer than 30 seconds
+        step={1}
+        className={classes.root}
+        classes={{
+          container: classes.slider,
+          track: classes.trackThickness,
+          thumb: classes.thumbIcon,
+          activated: classes.activated,
+          jumped: classes.jumped,
+          focused: classes.focused
+        }}
+        value={Math.ceil(props.songsInfo.timeElapsed)}
+      />
+
+      <div className={classes.elapsedTimeMargin}>
+        <Typography variant="caption" noWrap>
+          {secondFormatter(props.songsInfo.timeElapsed)}
+        </Typography>
+      </div>
+      <div className={classes.totalTimeMargin}>
+        <Typography variant="caption" noWrap>
+          0:30
+        </Typography>
+      </div>
+    </div>
+  );
+};
 
 const mapStateToProps = state => {
   return {

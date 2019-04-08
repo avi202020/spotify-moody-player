@@ -4,8 +4,8 @@ import { withStyles } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 
 const spotifyauthurl = "https://accounts.spotify.com/authorize?";
-const client_id = "youclientIdhere"; // Your client id
-const redirect_uri = "http://localhost:3000/callback/"; // Or Your redirect uri
+const client_id = "yourcliedidhere"; // Your client id
+const redirect_uri = "http://localhost:3000/callback"; // Your redirect uri
 const scope =
   "playlist-read-private%20playlist-read-collaborative%20user-library-read%20user-read-private%20user-read-email%20user-top-read%20user-read-playback-state";
 

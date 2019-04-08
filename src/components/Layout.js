@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
@@ -105,272 +105,264 @@ const styles = theme => ({
   }
 });
 
-class Layout extends React.Component {
-  static audio;
-
-  state = {
-    open: false,
-    dynamicCover: defaultCover,
-    dynamicBGColor: "rgba(2,136,209,0.6)", //default song
-    dynamicDarkText: false, //dark text for a light theme according to color shade
-    //Switch states
-    hiddenPlaylist: false,
-    dynamicColor: true,
-    darkMode: true
-  };
-
-  componentDidUpdate(prevProps) {
-    if (
-      this.props.songFeatures.energy &&
-      this.props.songFeatures !== prevProps.songFeatures
-    ) {
-      this.setState(state => ({
-        dynamicCover: this.props.songDetails.album.images[0].url,
-        dynamicBGColor: hexToRGBA(
-          colorShade(
-            this.props.songFeatures.energy,
-            this.props.songFeatures.valence
-          ),
+const Layout = props => {
+  const [open, setOpen] = useState(false);
+  const [dynamicCover, setDynamicCover] = useState(defaultCover);
+  const [dynamicBGColor, setDynamicBGColor] = useState("rgba(2,136,209,0.6)"); //default song
+  const [dynamicDarkText, setDynamicDarkText] = useState(false); //dark text for a light theme according to color shade
+  const routine = useRef();
+  const audio = useRef();
+  useEffect(() => {
+    if (props.songFeatures.energy) {
+      setDynamicCover(props.songDetails.album.images[0].url);
+      setDynamicBGColor(
+        hexToRGBA(
+          colorShade(props.songFeatures.energy, props.songFeatures.valence),
           0.6
-        ),
-        dynamicDarkText: isTextDark(
-          this.props.songFeatures.energy,
-          this.props.songFeatures.valence
         )
-      }));
+      );
+      setDynamicDarkText(
+        isTextDark(props.songFeatures.energy, props.songFeatures.valence)
+      );
     }
-    if (this.audio !== undefined) {
-      this.audio.volume = this.props.volume / 100;
-    }
-  }
+  }, [props.songFeatures]);
 
-  calculateTime() {
-    const routine = setInterval(() => {
-      if (this.audio.ended) {
-        this.pauseSong();
-        this.props.updateSongTime(0);
-      } else if (!this.props.songsInfo.songPaused) {
-        this.props.updateSongTime(this.audio.currentTime);
+  useEffect(() => {
+    if (audio.current !== undefined) {
+      audio.current.volume = props.volume / 100;
+    }
+  }, [props.volume]);
+
+  useEffect(() => {
+    if (audio.current) {
+      if (props.songPaused) {
+        clearInterval(routine.current);
+        audio.current.pause();
+      } else {
+        audio.current.play();
+        calculateTime();
+      }
+    }
+  }, [props.songPaused]);
+
+  useEffect(() => {
+    if (!props.songPlaying) {
+      clearInterval(routine.current);
+      updateSongTime(0);
+    }
+  }, [props.songPlaying]);
+
+  const calculateTime = () => {
+    clearInterval(routine.current);
+    const routinec = setInterval(() => {
+      if (audio.current) {
+        if (audio.current.ended) {
+          clearInterval(routine.current);
+          pauseSong();
+          props.updateSongTime(0);
+        } else if (!props.songsInfo.songPaused) {
+          props.updateSongTime(audio.current.currentTime);
+        }
       }
     }, 1000);
-    this.setState({
-      routine: routine
-    });
-  }
+    routine.current = routinec;
+  };
 
-  stopSong = () => {
-    if (this.audio) {
-      this.props.stopSong();
-      this.audio.pause();
-      this.props.updateSongTime(0);
-      clearInterval(this.state.routine);
+  const stopSong = () => {
+    if (audio.current) {
+      audio.current.pause();
+      props.stopSong();
+      clearInterval(routine.current);
+      props.updateSongTime(0);
     } else {
-      this.props.stopSong();
-      this.props.updateSongTime(0);
-      clearInterval(this.state.routine);
+      props.stopSong();
+      clearInterval(routine.current);
+      props.updateSongTime(0);
     }
   };
 
-  resumeSong = () => {
-    if (this.audio) {
-      this.props.resumeSong();
-      this.audio.play();
-      this.calculateTime();
+  const resumeSong = () => {
+    if (audio.current) {
+      props.resumeSong();
     }
   };
 
-  pauseSong = () => {
-    if (this.audio) {
-      this.props.pauseSong();
-      this.audio.pause();
-      clearInterval(this.state.routine);
+  const pauseSong = () => {
+    if (audio.current) {
+      props.pauseSong();
+      audio.current.pause();
+      clearInterval(routine.current);
     }
   };
 
-  playAudio = song => {
-    const { updateSongTime } = this.props;
-    clearInterval(this.state.routine);
+  const playAudio = song => {
+    const { updateSongTime } = props;
+    clearInterval(routine.current);
     if (song.track.preview_url !== null) {
-      if (this.audio === undefined) {
-        this.audio = new Audio(song.track.preview_url);
-        this.audio.play();
-        this.calculateTime();
+      if (audio.current === undefined) {
+        audio.current = new Audio(song.track.preview_url);
       } else {
         updateSongTime(0);
-        this.audio.pause();
-        this.audio = new Audio(song.track.preview_url);
-        this.audio.play();
-        this.calculateTime();
+        audio.current.pause();
+        audio.current = new Audio(song.track.preview_url);
+        audio.current.play();
+        calculateTime();
       }
     } else {
-      this.stopSong();
+      stopSong();
     }
   };
 
-  handleClickSettings = event => {
-    this.setState(state => ({
-      open: !state.open
-    }));
+  const handleClickSettings = () => {
+    setOpen(!open);
   };
 
-  handleClickAway = () => {
-    this.setState({
-      open: false
-    });
+  const handleClickAway = () => {
+    setOpen(false);
   };
 
-  handleChangeSettings = name => event => {
-    this.setState({ [name]: event.target.checked });
-  };
+  const { classes } = props;
+  document.body.style.backgroundImage = `url(${dynamicCover})`;
 
-  render() {
-    const { classes } = this.props;
-    const { open, dynamicCover } = this.state;
-    document.body.style.backgroundImage = `url(${dynamicCover})`;
-
-    return (
-      <MuiThemeProvider
-        theme={
-          this.props.switchState.uiDynamicColor
-            ? this.state.dynamicDarkText
-              ? themeLight
-              : themeDark
-            : this.props.switchState.uiDarkMode
-            ? themeDark
-            : themeLight
+  return (
+    <MuiThemeProvider
+      theme={
+        props.switchState.uiDynamicColor
+          ? dynamicDarkText
+            ? themeLight
+            : themeDark
+          : props.switchState.uiDarkMode
+          ? themeDark
+          : themeLight
+      }
+    >
+      <ContainerOuter
+        bcolor={
+          props.switchState.uiDynamicColor
+            ? dynamicBGColor
+            : props.switchState.uiDarkMode
+            ? "rgba(0, 0, 0, 0.6)"
+            : "rgba(255, 255, 255, 0.4)"
         }
       >
-        <ContainerOuter
-          bcolor={
-            this.props.switchState.uiDynamicColor
-              ? this.state.dynamicBGColor
-              : this.props.switchState.uiDarkMode
-              ? "rgba(0, 0, 0, 0.6)"
-              : "rgba(255, 255, 255, 0.4)"
-          }
-        >
-          <ContainerInner>
-            <div className={classes.root}>
+        <ContainerInner>
+          <div className={classes.root}>
+            <Grid
+              container
+              justify="space-between"
+              alignItems="stretch"
+              spacing={16}
+              className={classes.gridContainer}
+            >
               <Grid
+                item
                 container
+                xs={12}
+                direction="row"
                 justify="space-between"
-                alignItems="stretch"
+                alignItems="center"
                 spacing={16}
-                className={classes.gridContainer}
+                wrap="nowrap"
               >
-                <Grid
-                  item
-                  container
-                  xs={12}
-                  direction="row"
-                  justify="space-between"
-                  alignItems="center"
-                  spacing={16}
-                  wrap="nowrap"
-                >
-                  <Grid item xs={1}>
-                    <Icon
-                      className={classes.iconPlaceholder}
-                      style={{ fontSize: 40 }}
-                    >
-                      fiber_manual_record
-                    </Icon>
-                  </Grid>
-                  <Grid item zeroMinWidth>
-                    <SongHeader />
-                  </Grid>
-                  <Grid item xs={1} container justify="flex-end">
-                    {this.props.auth.token ? (
-                      <div className={classes.wholeSet}>
-                        <ClickAwayListener onClickAway={this.handleClickAway}>
-                          <div>
-                            <IconButton
-                              disableRipple={true}
-                              className={classes.iconSelection}
-                              onClick={this.handleClickSettings}
-                            >
-                              <IconBCustom
-                                iconName="more_horiz"
-                                iconSize={40}
-                              />
-                            </IconButton>
-                            {open ? <SettingsSwitches /> : null}
-                          </div>
-                        </ClickAwayListener>
-                      </div>
-                    ) : null}
-                  </Grid>
+                <Grid item xs={1}>
+                  <Icon
+                    className={classes.iconPlaceholder}
+                    style={{ fontSize: 40 }}
+                  >
+                    fiber_manual_record
+                  </Icon>
                 </Grid>
-                {this.props.switchState.uiHiddenPlaylist ? (
-                  <Grid
-                    item
-                    container
-                    xs={12}
-                    direction="row"
-                    spacing={16}
-                    justify="center"
-                    alignItems="center"
-                    className={classes.topRow}
-                  >
-                    <Cover albumcover={dynamicCover} />
-                  </Grid>
-                ) : (
-                  <Grid
-                    item
-                    container
-                    xs={12}
-                    direction="row"
-                    spacing={16}
-                    justify="center"
-                    alignItems="center" //flex-start
-                    className={classes.topRow}
-                  >
-                    <Grid item container xs justify="flex-end">
-                      <Cover albumcover={dynamicCover} />
-                    </Grid>
-                    <Grid item container xs={6}>
-                      {this.props.auth.token ? (
-                        <Playlists playAudio={this.playAudio} />
-                      ) : (
-                        <LogInButton />
-                      )}
-                    </Grid>
-                  </Grid>
-                )}
-                <Grid
-                  item
-                  container
-                  xs={12}
-                  direction="row"
-                  justify="space-between"
-                  spacing={16}
-                >
-                  {this.props.auth.token ? (
-                    <React.Fragment>
-                      <Grid item>
-                        <PlaybackButtons
-                          pauseAudio={this.pauseSong}
-                          resumeAudio={this.resumeSong}
-                          playAudio={this.playAudio}
-                        />
-                      </Grid>
-                      <Grid item xs>
-                        <SongProgress />
-                      </Grid>
-                      <Grid item sm={1}>
-                        <Volume />
-                      </Grid>
-                    </React.Fragment>
+                <Grid item zeroMinWidth>
+                  <SongHeader />
+                </Grid>
+                <Grid item xs={1} container justify="flex-end">
+                  {props.auth.token ? (
+                    <div className={classes.wholeSet}>
+                      <ClickAwayListener onClickAway={handleClickAway}>
+                        <div>
+                          <IconButton
+                            disableRipple={true}
+                            className={classes.iconSelection}
+                            onClick={handleClickSettings}
+                          >
+                            <IconBCustom iconName="more_horiz" iconSize={40} />
+                          </IconButton>
+                          {open ? <SettingsSwitches /> : null}
+                        </div>
+                      </ClickAwayListener>
+                    </div>
                   ) : null}
                 </Grid>
               </Grid>
-            </div>
-          </ContainerInner>
-        </ContainerOuter>
-      </MuiThemeProvider>
-    );
-  }
-}
+              {props.switchState.uiHiddenPlaylist ? (
+                <Grid
+                  item
+                  container
+                  xs={12}
+                  direction="row"
+                  spacing={16}
+                  justify="center"
+                  alignItems="center"
+                  className={classes.topRow}
+                >
+                  <Cover albumcover={dynamicCover} />
+                </Grid>
+              ) : (
+                <Grid
+                  item
+                  container
+                  xs={12}
+                  direction="row"
+                  spacing={16}
+                  justify="center"
+                  alignItems="center"
+                  className={classes.topRow}
+                >
+                  <Grid item container xs justify="flex-end">
+                    <Cover albumcover={dynamicCover} />
+                  </Grid>
+                  <Grid item container xs={6}>
+                    {props.auth.token ? (
+                      <Playlists playAudio={playAudio} />
+                    ) : (
+                      <LogInButton />
+                    )}
+                  </Grid>
+                </Grid>
+              )}
+              <Grid
+                item
+                container
+                xs={12}
+                direction="row"
+                justify="space-between"
+                spacing={16}
+              >
+                {props.auth.token ? (
+                  <React.Fragment>
+                    <Grid item>
+                      <PlaybackButtons
+                        pauseAudio={pauseSong}
+                        resumeAudio={resumeSong}
+                        playAudio={playAudio}
+                      />
+                    </Grid>
+                    <Grid item xs>
+                      <SongProgress />
+                    </Grid>
+                    <Grid item sm={1}>
+                      <Volume />
+                    </Grid>
+                  </React.Fragment>
+                ) : null}
+              </Grid>
+            </Grid>
+          </div>
+        </ContainerInner>
+      </ContainerOuter>
+    </MuiThemeProvider>
+  );
+};
 
 Layout.propTypes = {
   classes: PropTypes.object.isRequired
@@ -385,7 +377,9 @@ const mapStateToProps = state => {
       ? state.songsReducer.features
       : "",
     songsInfo: state.songsReducer,
-    volume: state.soundReducer.volume
+    volume: state.soundReducer.volume,
+    songPaused: state.songsReducer.songPaused,
+    songPlaying: state.songsReducer.songPlaying
   };
 };
 

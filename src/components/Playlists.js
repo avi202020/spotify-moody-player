@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import {
   fetchPlaylists,
@@ -53,41 +53,28 @@ const styles = theme => ({
   }
 });
 
-class Playlists extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedIndexPL: this.props.playlists.playlistIndex,
-      selectedIndexSong: this.props.songIndex
-    };
-  }
+const Playlists = props => {
+  const [selectedIndexPL, setSelectedIndexPL] = useState(
+    props.playlists.playlistIndex
+  );
 
-  componentDidUpdate(prevProps) {
-    if (this.props !== prevProps) {
-      if (this.props.userId !== prevProps.userId) {
-        if (this.props.userId !== "" && this.props.token !== "") {
-          this.props.fetchPlaylists(this.props.userId, this.props.token);
-        }
-      }
+  useEffect(() => {
+    if (props.userId !== "" && props.token !== "") {
+      props.fetchPlaylists(props.userId, props.token);
     }
-  }
+  }, [props.userId]);
 
-  renderList() {
-    if (this.props.playlists.playlists) {
-      return this.props.playlists.playlists.map((playlist, index) => {
+  const renderList = () => {
+    if (props.playlists.playlists) {
+      return props.playlists.playlists.map((playlist, index) => {
         return (
           <ListItem
             variant="body2"
             button
-            selected={this.state.selectedIndexPL === index}
+            selected={selectedIndexPL === index}
             key={playlist.id}
             onClick={() =>
-              this.FetchSongs(
-                this.props.userId,
-                playlist.id,
-                this.props.token,
-                index
-              )
+              FetchSongs(props.userId, playlist.id, props.token, index)
             }
           >
             <ListItemText primary={playlist.name} />
@@ -103,53 +90,45 @@ class Playlists extends React.Component {
         </React.Fragment>
       );
     }
-  }
+  };
 
-  FetchSongs(userId, playlistId, token, index) {
+  const FetchSongs = (userId, playlistId, token, index) => {
     //We avoid fetching the same tracklist
-    if (this.props.songs.playlistId !== playlistId) {
-      this.props.fetchPlaylistSongs(userId, playlistId, token);
-      this.props.getPlaylistIndex(index);
-      this.props.getSongIndex(null);
-      this.setState({ selectedIndexPL: index });
+    if (props.songs.playlistId !== playlistId) {
+      props.fetchPlaylistSongs(userId, playlistId, token);
+      props.getPlaylistIndex(index);
+      props.getSongIndex(null);
+      setSelectedIndexPL(index);
     }
-  }
+  };
 
-  render() {
-    const { classes } = this.props;
-    return (
-      <React.Fragment>
-        <Typography className={classes.playTitle} variant="overline" noWrap>
-          PLAYLISTS
-        </Typography>
-        <Typography
-          className={classes.tracklistTotal}
-          variant="overline"
-          noWrap
+  const { classes } = props;
+  return (
+    <React.Fragment>
+      <Typography className={classes.playTitle} variant="overline" noWrap>
+        PLAYLISTS
+      </Typography>
+      <Typography className={classes.tracklistTotal} variant="overline" noWrap>
+        {props.songs.songs ? props.songs.songs.length + " SONGS" : null}
+      </Typography>
+      <div className={classes.root}>
+        <Drawer
+          className={classes.drawer}
+          variant="permanent"
+          classes={{
+            paper: classes.drawerPaper
+          }}
+          anchor="left"
         >
-          {this.props.songs.songs
-            ? this.props.songs.songs.length + " SONGS"
-            : null}
-        </Typography>
-        <div className={classes.root}>
-          <Drawer
-            className={classes.drawer}
-            variant="permanent"
-            classes={{
-              paper: classes.drawerPaper
-            }}
-            anchor="left"
-          >
-            <List component="nav">{this.renderList()}</List>
-          </Drawer>
-          {!this.props.fetchSongsPending ? (
-            <TrackList playAudio={this.props.playAudio} />
-          ) : null}
-        </div>
-      </React.Fragment>
-    );
-  }
-}
+          <List component="nav">{renderList()}</List>
+        </Drawer>
+        {!props.fetchSongsPending ? (
+          <TrackList playAudio={props.playAudio} />
+        ) : null}
+      </div>
+    </React.Fragment>
+  );
+};
 
 const mapStateToProps = state => {
   return {
@@ -158,7 +137,6 @@ const mapStateToProps = state => {
     playlists: state.playlistsReducer,
     songs: state.songsReducer.songs ? state.songsReducer : "",
     selectedSongId: state.songsReducer.songId,
-    songIndex: state.songsReducer.songIndex,
     fetchSongsPending: state.songsReducer.fetchSongsPending
   };
 };

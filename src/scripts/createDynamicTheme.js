@@ -14,7 +14,7 @@ import indigo from "@material-ui/core/colors/indigo";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 import { createMuiTheme } from "@material-ui/core/styles";
 //Shade text is the last shade where the text is dark
-//a higher shade means that the color is dark enough for the text to change to a light color
+//a higher shade means that the background color is dark enough for the text to change to a light color
 const colorRed = {
   color: red,
   shadeText: 300
@@ -97,7 +97,9 @@ const energyToColor = energy => Math.round(13 * energy);
 //y=800*x+100
 const valenceToShade = valence => Math.round((800 * valence + 100) / 100) * 100;
 
-//I don't use this function anymore but it could be useful for another project
+//This function is not used anymore
+//Left here because it makes sense in the context of the project and it's easy
+//to understand what it does in case it's needed for another project.
 export const createDynamicTheme = (energy, valence) => {
   const colorIndex = energyToColor(energy);
   const colorShade = valenceToShade(valence);
@@ -130,6 +132,7 @@ export const colorShade = (energy, valence) => {
   return colors[colorIndex].color[colorShade];
 };
 
+//This function is used to determine if the background is dark enough to switch to a light color font
 export const isTextDark = (energy, valence) => {
   const colorIndex = energyToColor(energy);
   const colorShade = valenceToShade(valence);

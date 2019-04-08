@@ -29,10 +29,10 @@ const soundReducer = (state = { volume: 100 }, action) => {
 };
 
 export default combineReducers({
-  userReducer: userReducer,
-  uiSwitches: uiSwitches,
-  playlistsReducer: playlistsReducer,
-  songsReducer: songsReducer,
-  soundReducer: soundReducer,
-  tokenReducer: tokenReducer
+  userReducer,
+  uiSwitches,
+  playlistsReducer,
+  songsReducer,
+  soundReducer,
+  tokenReducer
 });

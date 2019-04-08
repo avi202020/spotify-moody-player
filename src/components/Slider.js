@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import { withStyles } from "@material-ui/core/styles";
 import { updateVolume } from "../actions/";
@@ -23,40 +23,29 @@ const styles = theme => ({
   }
 });
 
-class SliderComp extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: props.volume
-    };
-  }
+const SliderComp = props => {
+  const [value, setValue] = useState(props.volume);
 
-  handleChange = (event, value) => {
-    this.setState({ value });
-    this.props.updateVolume(Math.ceil(value));
+  const handleChange = (event, value) => {
+    setValue(value);
+    props.updateVolume(Math.ceil(value));
   };
-
-  render() {
-    const { classes } = this.props;
-    const { value } = this.state;
-
-    return (
-      <Slider
-        min={0}
-        max={100}
-        className={classes.root}
-        classes={{
-          container: classes.slider,
-          track: classes.trackThickness,
-          thumb: classes.thumbIcon
-        }}
-        value={value}
-        onChange={this.handleChange}
-        onDragEnd={this.props.jumpAtTime}
-      />
-    );
-  }
-}
+  const { classes } = props;
+  return (
+    <Slider
+      min={0}
+      max={100}
+      className={classes.root}
+      classes={{
+        container: classes.slider,
+        track: classes.trackThickness,
+        thumb: classes.thumbIcon
+      }}
+      value={value}
+      onChange={handleChange}
+    />
+  );
+};
 
 const mapStateToProps = state => {
   return {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import Switch from "@material-ui/core/Switch";
 import FormControl from "@material-ui/core/FormControl";
@@ -27,74 +27,73 @@ const styles = theme => ({
   }
 });
 
-class SettingsPanel extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hiddenPlaylist: props.switchState.uiHiddenPlaylist,
-      dynamicColor: props.switchState.uiDynamicColor,
-      darkMode: props.switchState.uiDarkMode
-    };
-  }
+const SettingsPanel = props => {
+  const [hiddenPlaylist, setHiddenPlaylist] = useState(
+    props.switchState.uiHiddenPlaylist
+  );
+  const [dynamicColor, setDynamicColor] = useState(
+    props.switchState.uiDynamicColor
+  );
+  const [darkMode, setDarkMode] = useState(props.switchState.uiDarkMode);
 
-  handleChangeSettings = name => event => {
-    this.setState({ [name]: event.target.checked });
+  const handleChangeSettings = name => event => {
     switch (name) {
       case "hiddenPlaylist":
-        return this.props.toggleHiddenPlaylist();
+        props.toggleHiddenPlaylist();
+        return setHiddenPlaylist(event.target.checked);
       case "dynamicColor":
-        return this.props.toggleDynamicColor();
+        props.toggleDynamicColor();
+        return setDynamicColor(event.target.checked);
       case "darkMode":
-        return this.props.toggleDarkMode();
+        props.toggleDarkMode();
+        return setDarkMode(event.target.checked);
       default:
         return null;
     }
   };
 
-  render() {
-    const { classes } = this.props;
-    return (
-      <Paper className={classes.paper}>
-        <FormControl component="fieldset" className={classes.fieldSet}>
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={this.state.hiddenPlaylist}
-                  onChange={this.handleChangeSettings("hiddenPlaylist")}
-                  value="hiddenPlay"
-                />
-              }
-              label="Hide Playlist"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={this.state.dynamicColor}
-                  onChange={this.handleChangeSettings("dynamicColor")}
-                  value="dynamicColor"
-                />
-              }
-              label="Dynamic Color"
-            />
-            {!this.state.dynamicColor ? (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={this.state.darkMode}
-                    onChange={this.handleChangeSettings("darkMode")}
-                    value="darkMode"
-                  />
-                }
-                label="Dark Mode"
+  const { classes } = props;
+  return (
+    <Paper className={classes.paper}>
+      <FormControl component="fieldset" className={classes.fieldSet}>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={hiddenPlaylist}
+                onChange={handleChangeSettings("hiddenPlaylist")}
+                value="hiddenPlay"
               />
-            ) : null}
-          </FormGroup>
-        </FormControl>
-      </Paper>
-    );
-  }
-}
+            }
+            label="Hide Playlist"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={dynamicColor}
+                onChange={handleChangeSettings("dynamicColor")}
+                value="dynamicColor"
+              />
+            }
+            label="Dynamic Color"
+          />
+          {!dynamicColor ? (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={darkMode}
+                  onChange={handleChangeSettings("darkMode")}
+                  value="darkMode"
+                />
+              }
+              label="Dark Mode"
+            />
+          ) : null}
+        </FormGroup>
+      </FormControl>
+    </Paper>
+  );
+};
 
 const mapStateToProps = state => {
   return {

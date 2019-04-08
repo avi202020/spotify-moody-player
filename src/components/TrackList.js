@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { withStyles } from "@material-ui/core";
 import Table from "@material-ui/core/Table";
@@ -36,94 +36,90 @@ const styles = theme => ({
   }
 });
 
-class TrackList extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedIndexSong: this.props.songIndex
-    };
-  }
+const TrackList = props => {
+  const [selectedIndexSong, setSelectedIndexSong] = useState(props.songIndex);
+  let tableScroll = null;
 
-  componentDidUpdate(prevProps) {
-    if (this.props.songs.playlistId) {
-      if (this.props.songs.playlistId !== prevProps.songs.playlistId) {
-        if (this.refs.tcontainer) {
-          this.refs.tcontainer.scrollTop = 0;
-        }
+  useEffect(() => {
+    if (props.songs.playlistId) {
+      if (tableScroll) {
+        tableScroll.scrollTop = 0;
       }
     }
-    if (this.props.songIndex !== prevProps.songIndex) {
-      this.setState({ selectedIndexSong: this.props.songIndex });
-    }
-  }
+  }, [props.songs.playlistId]);
 
-  msToMinutesAndSeconds(ms) {
+  useEffect(() => {
+    setSelectedIndexSong(props.songIndex);
+  }, [props.songIndex]);
+
+  const msToMinutesAndSeconds = ms => {
     const minutes = Math.floor(ms / 60000);
     const seconds = ((ms % 60000) / 1000).toFixed(0);
     return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-  }
+  };
 
-  SelectSongToPlay(song, index) {
-    this.props.getSongIndex(index);
-    this.props.playSong(song.track);
-    this.props.getSongFeatures(song.track.id, this.props.token);
-    this.props.playAudio(song);
-  }
+  const SelectSongToPlay = (song, index) => {
+    props.getSongIndex(index);
+    props.playSong(song.track);
+    props.getSongFeatures(song.track.id, props.token);
+    props.playAudio(song);
+  };
 
-  render() {
-    const { classes } = this.props;
-    if (this.props.songs.songs) {
-      return (
-        <React.Fragment>
-          <div className={classes.content} ref="tcontainer">
-            <Table className={classes.table}>
-              <TableHead>
-                <TableRow key="headertable">
-                  <TableCell className={classes.tableC}>TITLE</TableCell>
-                  <TableCell className={classes.tableC} align="left">
-                    ARTIST
+  const { classes } = props;
+  if (props.songs.songs) {
+    return (
+      <React.Fragment>
+        <div
+          className={classes.content}
+          ref={div => {
+            tableScroll = div;
+          }}
+        >
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow key="headertable">
+                <TableCell className={classes.tableC}>TITLE</TableCell>
+                <TableCell className={classes.tableC} align="left">
+                  ARTIST
+                </TableCell>
+                <TableCell className={classes.tableC} align="left">
+                  DURATION
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {props.songs.songs.map((row, index) => (
+                <TableRow
+                  selected={selectedIndexSong === index ? true : false}
+                  className={classes.tableRow}
+                  hover={true}
+                  key={index + "" + row.track.id}
+                  onClick={() => SelectSongToPlay(row, index)}
+                >
+                  <TableCell
+                    className={classes.tableC}
+                    component="th"
+                    scope="row"
+                  >
+                    {row.track.name}
                   </TableCell>
                   <TableCell className={classes.tableC} align="left">
-                    DURATION
+                    {row.track.artists[0].name}
+                  </TableCell>
+                  <TableCell className={classes.tableC} align="left">
+                    {msToMinutesAndSeconds(row.track.duration_ms)}
                   </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.props.songs.songs.map((row, index) => (
-                  <TableRow
-                    selected={
-                      this.state.selectedIndexSong === index ? true : false
-                    }
-                    className={classes.tableRow}
-                    hover={true}
-                    key={index + "" + row.track.id}
-                    onClick={() => this.SelectSongToPlay(row, index)}
-                  >
-                    <TableCell
-                      className={classes.tableC}
-                      component="th"
-                      scope="row"
-                    >
-                      {row.track.name}
-                    </TableCell>
-                    <TableCell className={classes.tableC} align="left">
-                      {row.track.artists[0].name}
-                    </TableCell>
-                    <TableCell className={classes.tableC} align="left">
-                      {this.msToMinutesAndSeconds(row.track.duration_ms)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </React.Fragment>
-      );
-    } else {
-      return null;
-    }
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </React.Fragment>
+    );
+  } else {
+    return null;
   }
-}
+};
 
 const mapStateToProps = state => {
   return {

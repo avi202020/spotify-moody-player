@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Layout from "./Layout";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { connect } from "react-redux";
 import { setToken, fetchUser } from "../actions";
-class App extends React.Component {
-  componentDidMount() {
+const App = props => {
+  useEffect(() => {
     let hashParams = {};
     let e,
       r = /([^&;=]+)=?([^&;]*)/g,
@@ -13,25 +13,23 @@ class App extends React.Component {
       hashParams[e[1]] = decodeURIComponent(e[2]);
     }
     if (hashParams.access_token) {
-      this.props.setToken(hashParams.access_token);
+      props.setToken(hashParams.access_token);
     }
-  }
+  }, []);
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.token !== this.props.token) {
-      this.props.fetchUser(this.props.token.token);
+  useEffect(() => {
+    if (props.token.token) {
+      props.fetchUser(props.token.token);
     }
-  }
+  }, [props.token]);
 
-  render() {
-    return (
-      <div>
-        <CssBaseline />
-        <Layout />
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <CssBaseline />
+      <Layout />
+    </div>
+  );
+};
 
 const mapStateToProps = state => {
   return {

@@ -22,23 +22,21 @@ const styles = theme => ({
   }
 });
 
-class Volume extends React.Component {
-  render() {
-    const { classes } = this.props;
+const Volume = props => {
+  const { classes } = props;
 
-    return (
-      <Grid className={classes.root} container direction="row">
-        <Grid item xs={2}>
-          <Icon className={classes.ico} style={{ fontSize: 20 }}>
-            volume_up
-          </Icon>
-        </Grid>
-        <Grid item xs>
-          <Slider />
-        </Grid>
+  return (
+    <Grid className={classes.root} container direction="row">
+      <Grid item xs={2}>
+        <Icon className={classes.ico} style={{ fontSize: 20 }}>
+          volume_up
+        </Icon>
       </Grid>
-    );
-  }
-}
+      <Grid item xs>
+        <Slider />
+      </Grid>
+    </Grid>
+  );
+};
 
 export default withStyles(styles)(Volume);
